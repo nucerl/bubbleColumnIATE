@@ -1,0 +1,24 @@
+
+# generate mesh
+#ideasUnvToFoam newAbeMeshCoarse.unv | tee log.mesh
+#ideasUnvToFoam newAbeMesh.unv | tee log.mesh
+ideasUnvToFoam yoshidaMeshFinest.unv | tee log.mesh
+changeDictionary | tee -a log.mesh
+checkMesh | tee -a log.mesh
+
+cp -r ./0.orig ./0
+
+setFields    | tee    log.preRun
+decomposePar | tee -a log.preRun
+
+# run the simulation
+mpirun -np 16 foamRun -parallel | tee -a log.parallelRun
+
+# reconstruct the time driectories
+reconstructPar
+
+# change the folder path in the file and save it as foldername.pvsm
+sed 's?postABE?'`pwd`'?' ABE.pvsm > ${PWD##*/}.pvsm
+
+# open in paraview
+paraview --state=${PWD##*/}.pvsm

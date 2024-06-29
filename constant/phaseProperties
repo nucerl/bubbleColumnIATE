@@ -1,0 +1,228 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+  =========                 |
+  \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox
+   \\    /   O peration     | Website:  https://openfoam.org
+    \\  /    A nd           | Version:  11
+     \\/     M anipulation  |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    format      ascii;
+    class       dictionary;
+    location    "constant";
+    object      phaseProperties;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+type basicMultiphaseSystem;
+
+phases (air water);
+
+air
+{
+    type            purePhaseModel;
+
+    diameterModel   IATE;
+
+    IATECoeffs
+    {
+        dMax  11e-3;
+        dMin 0.1e-3;
+        residualAlpha 1e-6;
+
+        sources
+        (
+            wakeEntrainmentCoalescence
+            {
+                Cwe         0.002;
+            }
+            randomCoalescence
+            {
+                Crc         0.04;
+                C           3;
+                alphaMax    0.75;
+            }
+            turbulentBreakUp
+            {
+                Cti         0.085;
+                WeCr        3; //0.75;
+            }
+        );
+    }
+
+    residualAlpha   1e-6;
+}
+
+/*air
+{
+    type            purePhaseModel;
+    diameterModel   constant;
+    constantCoeffs
+    {
+        d               15e-3;  //6.75e-3;
+    }
+
+    residualAlpha   1e-6;
+}*/
+
+water
+{
+    type          purePhaseModel;
+    diameterModel constant;
+    constantCoeffs
+    {
+        d               1e-4;
+    }
+
+    residualAlpha   1e-6;
+}
+
+blending
+{
+    default
+    {
+        type            linear;
+        minFullyContinuousAlpha.air 0.7;
+        minPartlyContinuousAlpha.air 0.3;
+        minFullyContinuousAlpha.water 0.7;
+        minPartlyContinuousAlpha.water 0.3;
+    }
+
+    drag
+    {
+        type            linear;
+        minFullyContinuousAlpha.air 0.7;
+        minPartlyContinuousAlpha.air 0.5;
+        minFullyContinuousAlpha.water 0.7;
+        minPartlyContinuousAlpha.water 0.5;
+    }
+}
+
+surfaceTension
+{
+    air_water
+    {
+        type            constant;
+        sigma           0.07;
+    }
+}
+
+drag
+{
+    air_dispersedIn_water
+    {
+        type            IshiiZuber;  //SchillerNaumann;
+        residualRe      1e-3;
+        swarmCorrection
+        {
+            type            Tomiyama; //none;
+            residualAlpha   1e-4;
+            l               1.75;
+        }
+    }
+
+    water_dispersedIn_air
+    {
+        type            SchillerNaumann;
+        residualRe      1e-3;
+        swarmCorrection
+        {
+            type        none;
+        }
+    }
+
+    air_segregatedWith_water
+    {
+        type            segregated;
+        m               0.5;
+        n               8;
+        swarmCorrection
+        {
+            type        none;
+        }
+    }
+}
+
+virtualMass
+{
+    air_dispersedIn_water
+    {
+        type            constantCoefficient;
+        Cvm             0.5;
+    }
+
+    water_dispersedIn_air
+    {
+        type            constantCoefficient;
+        Cvm             0.5;
+    }
+}
+
+lift                 // air-water systems atm conditions Cl change its sign at 5.8 mm
+{
+    air_dispersedIn_water
+    {
+        type            Tomiyama;
+        //Cl              0.25;
+
+            aspectRatio
+            {
+                type constant;
+                E0 1;
+            }
+    }
+
+    water_dispersedIn_air
+    {
+        type            Tomiyama;
+        //Cl              0.25;
+            aspectRatio
+            {
+                type constant;
+                E0 1;
+            }
+    }
+}
+
+turbulentDispersion
+{
+    air_dispersedIn_water
+    {
+        type            Burns;      //        type           LopezDeBertodano;
+        sigma           0.9;        //        Ctd            0.2;
+    }
+
+    water_dispersedIn_air
+    {
+        type            Burns;
+        sigma           0.9;
+    }
+
+}
+
+heatTransfer
+{
+    air_dispersedIn_water
+    {
+        type            RanzMarshall;
+        residualAlpha   1e-4;
+    }
+
+    water_dispersedIn_air
+    {
+        type            RanzMarshall;
+        residualAlpha   1e-4;
+    }
+}
+
+phaseTransfer
+{}
+
+wallLubrication
+{}
+
+
+interfaceCompression
+{}
+
+// ************************************************************************* //

@@ -1,0 +1,7 @@
+# clean the previous simulation data
+. $WM_PROJECT_DIR/bin/tools/CleanFunctions
+rm -rf ./0
+cleanCase
+
+echo "Erol Bicer | Case ${PWD##*/}" >> log.parallelRun
+clear

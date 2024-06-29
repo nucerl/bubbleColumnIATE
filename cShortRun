@@ -1,0 +1,26 @@
+
+# generate mesh
+blockMesh | tee    log.mesh
+#checkMesh | tee -a log.mesh
+
+cp -r ./0.orig ./0
+
+setFields    | tee    log.preRun
+#decomposePar | tee -a log.preRun
+
+# run the simulation
+#mpirun -np 16 foamRun -parallel | tee -a log.parallelRun
+
+# foamRun | tee -a log.parallelRun
+
+# reconstruct the time driectories
+#reconstructPar
+
+# change the folder path in the file and save it as foldername.pvsm
+#sed 's?YOSHIDA?'`pwd`'?' YOSHIDA.pvsm > ${PWD##*/}.pvsm
+
+paraFoam
+
+# open in paraview
+#paraview --state=${PWD##*/}.pvsm
+
